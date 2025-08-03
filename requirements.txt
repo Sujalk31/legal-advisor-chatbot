@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+pydantic
+pandas
+python-dotenv
+langchain
+langchain-google-genai
+google-api-python-client
+faiss-cpu
+sentence-transformers
