@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Legal Advisor Chatbot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex flex-col h-screen bg-gray-100">
+
+  <!-- Header -->
+  <header class="bg-blue-800 text-white text-center p-4 shadow">
+    <h1 class="text-2xl font-semibold">Legal Advisor Bot</h1>
+    <p class="text-sm">Ask legal questions related to IPC (Indian Penal Code)</p>
+  </header>
+
+  <!-- Chat Area -->
+  <main id="chat-box" class="flex-1 p-4 overflow-y-auto">
+    <!-- Messages will be dynamically inserted here -->
+  </main>
+
+  <!-- Input Area -->
+  <footer class="p-4 bg-white shadow">
+    <div class="flex gap-2">
+      <input
+        id="user-input"
+        type="text"
+        placeholder="Type your legal question..."
+        class="flex-1 p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+        onkeydown="if(event.key==='Enter') sendMessage()"
+      />
+      <button
+        onclick="sendMessage()"
+        class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-xl"
+      >
+        Send
+      </button>
+    </div>
+  </footer>
+
+  <!-- JS Script -->
+  <script>
+    async function sendMessage() {
+      const input = document.getElementById('user-input');
+      const chatBox = document.getElementById('chat-box');
+      const question = input.value.trim();
+
+      if (!question) return;
+
+      // User Message
+      const userMsg = document.createElement('div');
+      userMsg.className = "bg-blue-100 p-3 my-2 rounded-xl max-w-[70%] self-end ml-auto whitespace-pre-wrap";
+      userMsg.innerText = question;
+      chatBox.appendChild(userMsg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      // Clear input
+      input.value = "";
+
+      // Loading Indicator
+      const loadingMsg = document.createElement('div');
+      loadingMsg.className = "bg-gray-200 p-3 my-2 rounded-xl max-w-[70%] whitespace-pre-wrap";
+      loadingMsg.innerText = "Thinking...";
+      chatBox.appendChild(loadingMsg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      try {
+        const res = await fetch("/ask/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ question })
+        });
+
+        const data = await res.json();
+        chatBox.removeChild(loadingMsg);
+
+        // Bot Message
+        const botMsg = document.createElement('div');
+        botMsg.className = "bg-gray-200 p-3 my-2 rounded-xl max-w-[70%] whitespace-pre-wrap";
+        botMsg.innerText = data.answer || "No response received.";
+        chatBox.appendChild(botMsg);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+      } catch (err) {
+        chatBox.removeChild(loadingMsg);
+        const errorMsg = document.createElement('div');
+        errorMsg.className = "bg-red-200 text-red-800 p-3 my-2 rounded-xl max-w-[70%]";
+        errorMsg.innerText = "Something went wrong. Please try again.";
+        chatBox.appendChild(errorMsg);
+      }
+    }
+  </script>
+
+</body>
+</html>
